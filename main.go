@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/robfig/cron/v3"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -48,16 +47,6 @@ func main() {
 
 	r.Get("/", homeHandler)
 	r.Post("/submit", submitHandler)
-
-	c := cron.New()
-	_, err = c.AddFunc("0 0 * * *", func() {
-		deleteAllMessages()
-		saveDeletionInfo()
-	})
-	if err != nil {
-		log.Fatal(err)
-	}
-	c.Start()
 
 	log.Println("Server starting on http://localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", r))
