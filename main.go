@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"html/template"
 	"log"
 	"net/http"
@@ -9,7 +8,7 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
-	"gorm.io/driver/sqlite"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
@@ -18,26 +17,42 @@ type Message struct {
 	Content string
 }
 
+type DeletionInfo struct {
+	gorm.Model
+	LastDeletionTime time.Time
+}
+
 var db *gorm.DB
 var err error
 
-type DeletionInfo struct {
-	LastDeletionTime time.Time `json:"last_deletion_time"`
-}
-
-var deletionInfo DeletionInfo
-
 func main() {
-	db, err = gorm.Open(sqlite.Open("messages.db"), &gorm.Config{})
+	dsn := os.Getenv("DATABASE_URL")
+	if dsn == "" {
+		log.Fatal("DATABASE_URL environment variable is not set")
+	}
+
+	db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	db.AutoMigrate(&Message{})
+	if err := db.AutoMigrate(&Message{}, &DeletionInfo{}); err != nil {
+		log.Fatal("Error migrating database:", err)
+	}
 
-	loadDeletionInfo()
+	var deletionInfo DeletionInfo
+	if err := db.First(&deletionInfo).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			deletionInfo = DeletionInfo{LastDeletionTime: time.Now()}
+			if err := db.Create(&deletionInfo).Error; err != nil {
+				log.Fatal("Error creating DeletionInfo:", err)
+			}
+		} else {
+			log.Fatal("Error fetching DeletionInfo:", err)
+		}
+	}
 
-	if time.Since(deletionInfo.LastDeletionTime) >= 24*time.Hour {
+	if time.Since(deletionInfo.LastDeletionTime) >= 24*time.Second {
 		deleteAllMessages()
 	}
 
@@ -53,10 +68,17 @@ func main() {
 }
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
+	var deletionInfo DeletionInfo
+	if err := db.First(&deletionInfo).Error; err != nil {
+		log.Println("Error fetching DeletionInfo:", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
 	if time.Since(deletionInfo.LastDeletionTime) >= 24*time.Hour {
 		deleteAllMessages()
-		saveDeletionInfo()
 	}
+
 	tmpl, err := template.ParseFiles("templates/home.html")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -64,57 +86,56 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var messages []Message
-	db.Find(&messages)
+	if err := db.Order("created_at DESC").Find(&messages).Error; err != nil {
+		log.Println("Error fetching messages:", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
 
-	tmpl.Execute(w, messages)
+	if err := tmpl.Execute(w, messages); err != nil {
+		log.Println("Error executing template:", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	}
 }
 
 func submitHandler(w http.ResponseWriter, r *http.Request) {
+	var deletionInfo DeletionInfo
+	if err := db.First(&deletionInfo).Error; err != nil {
+		log.Println("Error fetching DeletionInfo:", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
 	if time.Since(deletionInfo.LastDeletionTime) >= 24*time.Hour {
 		deleteAllMessages()
-		saveDeletionInfo()
 	}
 
 	content := r.FormValue("content")
 
 	message := Message{Content: content}
-	db.Create(&message)
+	if err := db.Create(&message).Error; err != nil {
+		log.Println("Error creating message:", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
 
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
 func deleteAllMessages() {
-	db.Exec("DELETE FROM messages")
-	log.Println("All messages deleted at", time.Now())
-	deletionInfo.LastDeletionTime = time.Now()
-}
-
-func loadDeletionInfo() {
-	file, err := os.ReadFile("deletion_info.json")
-	if err != nil {
-		if os.IsNotExist(err) {
-			deletionInfo.LastDeletionTime = time.Now()
-			saveDeletionInfo()
-			return
-		}
-		log.Fatal(err)
-	}
-
-	err = json.Unmarshal(file, &deletionInfo)
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
-func saveDeletionInfo() {
-	file, err := json.Marshal(deletionInfo)
-	if err != nil {
-		log.Println("Error marshaling deletion info:", err)
+	if err := db.Exec("TRUNCATE TABLE messages").Error; err != nil {
+		log.Println("Error deleting messages:", err)
 		return
 	}
+	log.Println("All messages deleted at", time.Now())
 
-	err = os.WriteFile("deletion_info.json", file, 0644)
-	if err != nil {
-		log.Println("Error saving deletion info:", err)
+	var deletionInfo DeletionInfo
+	if err := db.First(&deletionInfo).Error; err != nil {
+		log.Println("Error fetching DeletionInfo:", err)
+		return
+	}
+	deletionInfo.LastDeletionTime = time.Now()
+	if err := db.Save(&deletionInfo).Error; err != nil {
+		log.Println("Error updating DeletionInfo:", err)
 	}
 }
