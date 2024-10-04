@@ -52,7 +52,7 @@ func main() {
 		}
 	}
 
-	if time.Since(deletionInfo.LastDeletionTime) >= 24*time.Second {
+	if time.Since(deletionInfo.LastDeletionTime) >= 12*time.Hour {
 		deleteAllMessages()
 	}
 
@@ -75,7 +75,7 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if time.Since(deletionInfo.LastDeletionTime) >= 24*time.Hour {
+	if time.Since(deletionInfo.LastDeletionTime) >= 12*time.Hour {
 		deleteAllMessages()
 	}
 
@@ -106,7 +106,7 @@ func submitHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if time.Since(deletionInfo.LastDeletionTime) >= 24*time.Hour {
+	if time.Since(deletionInfo.LastDeletionTime) >= 12*time.Hour {
 		deleteAllMessages()
 	}
 
