@@ -8,13 +8,15 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
 type Message struct {
-	gorm.Model
-	Content string
+	ID        uint      `gorm:"primaryKey;autoIncrement"`
+	Content   string    `gorm:"not null"`
+	CreatedAt time.Time `gorm:"autoCreateTime"`
 }
 
 var db *gorm.DB
@@ -37,13 +39,15 @@ func main() {
 
 	r := chi.NewRouter()
 
+	r.Use(middleware.Logger)
+
 	r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 
 	r.Get("/", homeHandler)
 	r.Post("/submit", submitHandler)
 
-	log.Println("Server starting on http://localhost:8080")
-	log.Fatal(http.ListenAndServe(":8080", r))
+	log.Println("Server starting on http://localhost:3000")
+	log.Fatal(http.ListenAndServe(":3000", r))
 }
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
