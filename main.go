@@ -1,7 +1,7 @@
 package main
 
 import (
-	"html/template"
+	"encoding/json"
 	"log"
 	"net/http"
 	"os"
@@ -41,22 +41,21 @@ func main() {
 
 	r.Use(middleware.Logger)
 
-	r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
+	r.Handle("/*", http.StripPrefix("/", http.FileServer(http.Dir("./dist"))))
 
-	r.Get("/", homeHandler)
-	r.Post("/submit", submitHandler)
+	r.Get("/", spaHandler)
+	r.Post("/api/notes", getNotesHandler)
+	r.Post("/api/add", submitHandler)
 
 	log.Println("Server starting on http://localhost:3000")
 	log.Fatal(http.ListenAndServe(":3000", r))
 }
 
-func homeHandler(w http.ResponseWriter, r *http.Request) {
-	tmpl, err := template.ParseFiles("templates/home.html")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+func spaHandler(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "./dist/index.html")
+}
 
+func getNotesHandler(w http.ResponseWriter, r *http.Request) {
 	var messages []Message
 	if err := db.Where("created_at > ?", time.Now().Add(-12*time.Hour)).Order("created_at DESC").Find(&messages).Error; err != nil {
 		log.Println("Error fetching messages:", err)
@@ -64,10 +63,7 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := tmpl.Execute(w, messages); err != nil {
-		log.Println("Error executing template:", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-	}
+	json.NewEncoder(w).Encode(messages)
 
 	deleteOldMessages()
 }
@@ -88,6 +84,4 @@ func submitHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
-
-	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
