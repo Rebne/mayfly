@@ -58,10 +58,19 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var messages []Message
-	if err := db.Where("created_at > ?", time.Now().Add(-12*time.Hour)).Order("created_at DESC").Find(&messages).Error; err != nil {
-		log.Println("Error fetching messages:", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
+	maxRetries := 3
+	for attempt := 1; attempt <= maxRetries; attempt++ {
+		err := db.Where("created_at > ?", time.Now().Add(-12*time.Hour)).Order("created_at DESC").Find(&messages).Error
+		if err == nil {
+			break
+		}
+		if attempt == maxRetries {
+			log.Printf("Error fetching messages after %d attempts: %v", maxRetries, err)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+		log.Printf("Attempt %d: Error fetching messages: %v. Retrying...", attempt, err)
+		time.Sleep(time.Duration(attempt) * 100 * time.Millisecond)
 	}
 
 	if err := tmpl.Execute(w, messages); err != nil {
