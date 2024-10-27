@@ -42,7 +42,10 @@ func main() {
 	if err != nil {
 		log.Fatal("Error enabling uuid-ossp extension:", err)
 	}
-	if err := db.AutoMigrate(&Message{}, &User{}); err != nil {
+	if err := db.AutoMigrate(&User{}); err != nil {
+		log.Fatal("Error migrating database:", err)
+	}
+	if err := db.AutoMigrate(&Message{}); err != nil {
 		log.Fatal("Error migrating database:", err)
 	}
 	r := chi.NewRouter()
@@ -84,7 +87,11 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	cookie, err := r.Cookie("user_id")
 	if err != nil {
-		log.Println("Error parsing user_id:", err)
+		if err == http.ErrNoCookie {
+			log.Println("No user_id found in r.Cookie homeHandler redirecting for userMiddleware")
+			http.Redirect(w, r, "/", http.StatusSeeOther)
+		}
+		log.Println("Error with r.Cookie in homeHandler:", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
