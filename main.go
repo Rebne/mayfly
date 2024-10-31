@@ -139,13 +139,44 @@ func deleteOldMessages(userID uuid.UUID) error {
 
 func submitHandler(w http.ResponseWriter, r *http.Request) {
 	content := r.FormValue("content")
-	cookie, _ := r.Cookie("user_id")
-	userID, _ := uuid.Parse(cookie.Value)
+	cookie, err := r.Cookie("user_id")
+	if err != nil {
+		log.Println("Error getting user cookie:", err)
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
+
+	userID, err := uuid.Parse(cookie.Value)
+	if err != nil {
+		log.Println("Error parsing user ID:", err)
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
+
+	// Check if user exists
+	var user User
+	if err := db.First(&user, "id = ?", userID).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			// Create user if not found
+			user = User{ID: userID}
+			if err := db.Create(&user).Error; err != nil {
+				log.Println("Error creating user:", err)
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				return
+			}
+		} else {
+			log.Println("Error checking user:", err)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+	}
+
 	message := Message{Content: content, UserID: userID}
 	if err := db.Create(&message).Error; err != nil {
 		log.Println("Error creating message:", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
+
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
