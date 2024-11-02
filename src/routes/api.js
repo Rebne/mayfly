@@ -6,7 +6,7 @@ const router = express.Router();
 router.get("/notes", async (req, res) => {
   try {
     const notes = await getNotes(1, req.app.locals.pool);
-    res.status(200).send(notes.join(", "));
+    res.status(200).send(notes.map((note) => note.content).join(", "));
   } catch (error) {
     console.error("Error getting notes", error);
     res.status(500).send("Internal server error");
