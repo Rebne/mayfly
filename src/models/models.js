@@ -10,7 +10,7 @@ export const insertUsername = async (username, pool) => {
 
 export const getNotes = async (username, pool) => {
   const client = await pool.connect();
-  const res = await client.query("SELECT * FROM notes WHERE user_name = $1", [
+  const res = await client.query("SELECT * FROM notes WHERE user_id = $1", [
     username,
   ]);
   client.release();
