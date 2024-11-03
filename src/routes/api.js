@@ -1,5 +1,5 @@
 import express from "express";
-import { getNotes } from "../models/models.js";
+import { getNotes, deleteExpiredNotes } from "../models/models.js";
 
 const router = express.Router();
 
@@ -15,12 +15,13 @@ router.get("/notes", async (req, res) => {
 
 router.post("/notes", async (req, res) => {});
 
-// router.delete("/messages", async (req, res) => {
-//   try {
-//     deleteNote();
-//   } catch (error) {
-//     res.code(500);
-//   }
-// });
+router.delete("/messages/:id", async (req, res) => {
+  try {
+    const userID = req.params.id;
+    deleteNote();
+  } catch (error) {
+    res.code(500);
+  }
+});
 
 export default router;
