@@ -1,10 +1,10 @@
-import pkg from "pg";
+import pkg from 'pg';
 const { Pool } = pkg;
 
 const initDB = async () => {
   const psqlString = process.env.DATABASE_URL;
   if (!psqlString) {
-    throw new Error("env DATABASE_URL is not set");
+    throw new Error('env DATABASE_URL is not set');
   }
   const pool = new Pool({
     connectionString: psqlString,
@@ -25,9 +25,9 @@ const initDB = async () => {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
-    console.log("Tables created successfully");
+    console.log('Tables created successfully');
   } catch (err) {
-    console.error("Error creating tables", err);
+    console.error('Error creating tables', err);
     throw err;
   }
   return pool;
