@@ -5,3 +5,5 @@ Makefile
 ui/node_modules
 node_modules/
 .env
+.replit
+replit.nix

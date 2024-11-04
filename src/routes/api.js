@@ -1,11 +1,12 @@
 import express from "express";
-import { getNotes, deleteExpiredNotes } from "../models/models.js";
+import { getNotesAndRemoveOldDB } from "../models/models.js";
 
 const router = express.Router();
 
-router.get("/notes", async (req, res) => {
+router.get("/notes/:id", async (req, res) => {
   try {
-    const notes = await getNotes(1, req.app.locals.pool);
+    const userID = req.params.id;
+    const notes = await getNotesAndRemoveOldDB(userID, req.app.locals.pool);
     res.status(200).send(notes.map((note) => note.content).join(", "));
   } catch (error) {
     console.error("Error getting notes", error);
