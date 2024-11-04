@@ -130,7 +130,6 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 
 func deleteOldMessages(userID uuid.UUID) error {
 	result := db.Where("created_at < ? AND user_id = ?", time.Now().Add(-12*time.Hour), userID).Delete(&Message{})
-
 	if result.Error != nil {
 		return result.Error
 	}
