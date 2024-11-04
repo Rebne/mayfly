@@ -29,7 +29,7 @@ router.post("/notes/:userId", async (req, res) => {
 router.delete("/notes/:noteId", async (req, res) => {
   try {
     const noteID = req.params.noteId;
-    await deleteNote(noteID, req.app.locals.pool);
+    await deleteNoteDB(noteID, req.app.locals.pool);
   } catch (error) {
     console.error("Error deleting note", error);
     res.code(500).send("Internal server error");

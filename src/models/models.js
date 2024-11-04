@@ -1,10 +1,16 @@
-export const insertUsernameDB = async (username, pool) => {
+export const insertNoteDB = async (content, userID, pool) => {
   const client = await pool.connect();
   const res = await client.query(
-    "INSERT INTO users (username) VALUES ($1) RETURNING *",
-    [username],
+    "INSERT INTO notes (content, user_id) VALUES ($1, $2) RETURNING *",
+    [content, userID],
   );
   console.log(res.rows[0]);
+  client.release();
+};
+
+export const deleteNoteDB = async (noteID, pool) => {
+  const client = await pool.connect();
+  await client.query("DELETE FROM notes WHERE id = $1", [noteID]);
   client.release();
 };
 
