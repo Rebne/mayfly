@@ -1,9 +1,14 @@
-import express from 'express';
+import express from "express";
 
 const router = express.Router();
 
-router.get('/', (req, res) => {
-  res.render('index', {notes: ["test1", "test2", "test3"]})
-};
+const notes = [
+  { content: "Note1" },
+  { content: "Note2" },
+  { content: "Note3" },
+];
+router.get("/", (req, res) => {
+  res.render("index", { title: "Mayfly", notes });
+});
 
 export default router;
