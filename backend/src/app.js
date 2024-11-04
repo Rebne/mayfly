@@ -1,6 +1,6 @@
 import express from "express";
 import dotenv from "dotenv";
-//import initDB from "./config/test_database.js";
+import initDB from "./config/test_database.js";
 import { middlewareLogger } from "./middleware/logger.js";
 import apiRoutes from "./routes/api.js";
 import handlerRoutes from "./routes/handlers.js";
@@ -24,14 +24,14 @@ app.use(express.json());
 app.use("/api", apiRoutes);
 app.use("/", handlerRoutes);
 
-app.use(express.static(path.join(__dirname, 'dist')));
-app.get('*', (_, res) => {
-  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+app.use(express.static(path.join(__dirname, "dist")));
+app.get("*", (_, res) => {
+  res.sendFile(path.join(__dirname, "dist", "index.html"));
 });
 
 (async () => {
-  //const pool = await initDB();
-  //app.locals.pool = pool;
+  const pool = await initDB();
+  app.locals.pool = pool;
   app.listen(port, () => {
     console.log(`Server listening on port:${port}`);
   });

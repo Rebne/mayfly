@@ -24,7 +24,7 @@ router.post("/notes/:userId", async (req, res) => {
     const { content } = req.body;
     const userID = req.params.userId;
     const newNote = await insertNoteDB(content, userID, req.app.locals.pool);
-    res.status(201);
+    res.status(201).end();
     console.log("New note was successfully addedd for user: " + userID);
   } catch (error) {
     console.error("Error inserting new note", error);
@@ -36,7 +36,7 @@ router.delete("/notes/:noteId", async (req, res) => {
   try {
     const noteID = req.params.noteId;
     await deleteNoteDB(noteID, req.app.locals.pool);
-    res.code(200);
+    res.code(200).end();
     console.log("Note was successfully deleted with id: " + noteID);
   } catch (error) {
     console.error("Error deleting note", error);
