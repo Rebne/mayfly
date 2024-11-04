@@ -1,5 +1,5 @@
 import express from "express";
-import { getNotesAndRemoveOldDB } from "../models/models.js";
+import { getNotesAndRemoveOldDB, insertNoteDB, deleteNoteDB } from "../models/models.js";
 
 const router = express.Router();
 
