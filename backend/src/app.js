@@ -16,6 +16,7 @@ dotenv.config();
 const port = process.env.PORT || 8080;
 const app = express();
 app.engine("handlebars", engine());
+
 app.set("view engine", "handlebars");
 app.set("views", path.join(__dirname, "views"));
 
@@ -24,9 +25,11 @@ app.use(express.json());
 app.use("/api", apiRoutes);
 app.use("/", handlerRoutes);
 
-app.use(express.static(path.join(__dirname, "dist")));
+const __distpath = path.join(__dirname, "../frontend/dist");
+
+app.use(express.static(__distpath));
 app.get("*", (_, res) => {
-  res.sendFile(path.join(__dirname, "dist", "index.html"));
+  res.sendFile(path.join(__distpath, "index.html"));
 });
 
 (async () => {
