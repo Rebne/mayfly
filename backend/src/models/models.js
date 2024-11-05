@@ -1,4 +1,4 @@
-export const getUserID = async (username, password, pool) => {
+export const getUserIdentificationDB = async (username, password, pool) => {
   const client = await pool.connect();
   const res = await client.query(
     'SELECT id FROM users WHERE username = $1 AND password = $2',

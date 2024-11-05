@@ -4,6 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import apiRoutes from './routes/api.js';
 import { middlewareLogger } from './middleware/logger.js';
+import { getUserIdentificationDB } from './/models/models.js';'
 import jwt from 'jsonwebtoken';
 import { userInfo } from 'os';
 //import initDB from './config/test_database.js';
@@ -19,15 +20,25 @@ const app = express();
 
 const secret_key = process.env.SECRET_KEY;
 
-const createToken = (user, password) => {
-  
+
+
+const createToken = (userID) => {
   const payload = {
-    userID: 
+    userID: userID
   };
   const options = {
-    expiresIn: '1h',
+    expiresIn: '7d',
   };
   return jwt.sign(payload, secret_key, options);
+}
+
+const verifyToken = (token) => {
+  try {
+    const decoded = jwt.verify(token, secret_key);
+    return decoded.userID;
+  } catch (error) {
+    return null;
+  }
 }
 
 app.use(middlewareLogger);
@@ -38,6 +49,7 @@ app.use('/api', apiRoutes);
 app.get('*', (_, res) => {
   res.sendFile(path.join(__distpath, 'index.html'));
 });
+app.post('/login', loginHandler);
 
 (async () => {
   //const pool = await initDB();
