@@ -5,8 +5,7 @@ import { fileURLToPath } from 'url';
 import apiRoutes from './routes/api.js';
 import { middlewareLogger } from './middleware/logger.js';
 import { getUserIdentificationDB } from './/models/models.js';'
-import jwt from 'jsonwebtoken';
-import { userInfo } from 'os';
+
 //import initDB from './config/test_database.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -17,29 +16,6 @@ dotenv.config();
 
 const port = process.env.PORT || 8080;
 const app = express();
-
-const secret_key = process.env.SECRET_KEY;
-
-
-
-const createToken = (userID) => {
-  const payload = {
-    userID: userID
-  };
-  const options = {
-    expiresIn: '7d',
-  };
-  return jwt.sign(payload, secret_key, options);
-}
-
-const verifyToken = (token) => {
-  try {
-    const decoded = jwt.verify(token, secret_key);
-    return decoded.userID;
-  } catch (error) {
-    return null;
-  }
-}
 
 app.use(middlewareLogger);
 app.use(express.json());
