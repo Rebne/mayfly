@@ -1,3 +1,14 @@
+export const getUserID = async (username, password, pool) => {
+  const client = await pool.connect();
+  const res = await client.query(
+    'SELECT id FROM users WHERE username = $1 AND password = $2',
+    [username, password],
+  );
+  console.log(res.rows[0]);
+  client.release();
+  return res.rows[0];
+};
+
 export const insertNoteDB = async (content, userID, pool) => {
   const client = await pool.connect();
   const res = await client.query(
