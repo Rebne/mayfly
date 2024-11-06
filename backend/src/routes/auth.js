@@ -1,4 +1,4 @@
-import express, { json } from 'express';
+import express from 'express';
 import crypto from 'crypto';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
@@ -18,7 +18,7 @@ const logoutHandler = async (req, res) => {
   const { refreshToken } = req.body;
   const hash = crypto.createHash('sha256').update(refreshToken).digest('hex');
   try {
-    await deleteRefreshTokenByHashDB(hash, req.app.locals.pool);
+    await deleteRefreshTokenDB(hash, req.app.locals.pool);
   } catch (error) {
     console.error('Error deleting refresh token', error);
     return res.status(401).json({ error: 'Invalid refresh token' });
@@ -34,7 +34,7 @@ const registerHandler = async (req, res) => {
     if (user) {
       return res.status(409).json({ error: 'Username already exists' });
     }
-    const newUser = await insertUserDB(
+    const newUser = await storeUserDB(
       username,
       hashedPassword,
       req.app.locals.pool,
@@ -45,12 +45,21 @@ const registerHandler = async (req, res) => {
     const refreshToken = jwt.sign({ id: newUser.id }, secret_key, {
       expiresIn: '30d',
     });
-    res
+    const refreshTokenHash = crypto
+      .createHash('sha256')
+      .update(refreshToken)
+      .digest('hex');
+    await storeRefreshTokenDB(
+      refreshTokenHash,
+      refreshToken,
+      req.app.locals.pool,
+    );
+    return res
       .status(201)
       .json({ accessToken: accessToken, refreshToken: refreshToken });
   } catch (error) {
     console.error('Error registering user', error);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
@@ -65,10 +74,14 @@ const loginHandler = async (req, res) => {
   const refreshToken = jwt.sign({ id: user.id }, secret_key, {
     expiresIn: '30d',
   });
-  res.status(200).json({
-    accessToken: accessToken,
-    refreshToken: refreshToken,
-  });
+  const refreshTokenHash = crypto
+    .createHash('sha256')
+    .update(refreshToken)
+    .digest('hex');
+  await storeRefreshTokenDB(refreshTokenHash, user.id, req.app.locals.pool);
+  return res
+    .status(200)
+    .json({ accessToken: accessToken, refreshToken: refreshToken });
 };
 
 const refreshHandler = async (req, res) => {
@@ -84,7 +97,7 @@ const refreshHandler = async (req, res) => {
   );
   const hash = crypto.createHash('sha256').update(refreshToken).digest('hex');
   try {
-    await updateRefreshTokenByHashDB(hash, req.app.locals.pool);
+    await updateRefreshTokenDB(hash, req.app.locals.pool);
   } catch (error) {
     return res.code(400).json({ error: 'Invalid refresh token' });
   }

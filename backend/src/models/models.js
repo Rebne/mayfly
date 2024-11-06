@@ -1,10 +1,13 @@
-export const insertUserDB(username, password, pool) => {
+export const storeUserDB = async (username, password, pool) => {
   const client = await pool.connect();
-  const res = await client.query('INSERT INTO users (username, password) VALUES ($1, $2) RETURNING *', [username, password])
+  const res = await client.query(
+    'INSERT INTO users (username, password) VALUES ($1, $2) RETURNING *',
+    [username, password],
+  );
   console.log(res);
   client.release();
   return res;
-}
+};
 
 export const getUserInfoDB = async (username, pool) => {
   const client = await pool.connect();
@@ -17,7 +20,7 @@ export const getUserInfoDB = async (username, pool) => {
   return res.rows[0];
 };
 
-export const insertNoteDB = async (content, userID, pool) => {
+export const storeNoteDB = async (content, userID, pool) => {
   const client = await pool.connect();
   const res = await client.query(
     'INSERT INTO notes (content, user_id) VALUES ($1, $2) RETURNING *',

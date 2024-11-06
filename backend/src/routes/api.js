@@ -1,7 +1,7 @@
 import express from 'express';
 import {
   getNotesAndRemoveOldDB,
-  insertNoteDB,
+  storeNoteDB,
   deleteNoteDB,
 } from '../models/models.js';
 
@@ -23,7 +23,7 @@ router.post('/notes/:userId', async (req, res) => {
   try {
     const { content } = req.body;
     const userID = req.params.userId;
-    const newNote = await insertNoteDB(content, userID, req.app.locals.pool);
+    const newNote = await storeNoteDB(content, userID, req.app.locals.pool);
     res.status(201).end();
     console.log('New note was successfully addedd for user: ' + userID);
   } catch (error) {
