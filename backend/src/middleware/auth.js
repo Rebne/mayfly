@@ -1,6 +1,12 @@
 import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const secret_key = process.env.SECRET_KEY;
+if (!secret_key) {
+  throw new Error('SECRET_KEY environment variable is not set');
+}
 
 export const authenticateTokenMiddleware = (req, res, next) => {
   const authHeader = req.headers.authorization;

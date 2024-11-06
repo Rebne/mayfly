@@ -1,19 +1,45 @@
+export const deleteRefreshTokenDB = async (hash, pool) => {
+  const client = await pool.connect();
+  await client.query('DELETE FROM tokens WHERE hash = $1'), [hash];
+  client.release();
+};
+
+export const storeRefreshTokenDB = async (userID, hash, pool) => {
+  const client = await pool.connect();
+  const res = await client.query(
+    'INSERT INTO tokens (userID, hash) VALUES($1, $2)',
+    [userID, hash]
+  );
+  console.log(res.rows[0]);
+  client.release();
+};
+
+export const updateRefreshTokenDB = async (userID, hash, pool) => {
+  const client = await pool.connect();
+  const res = await client.query(
+    'UPDATE tokenst SET hash = $1 WHERE user_id = $2',
+    [hash, userID]
+  );
+  client.release();
+  return res.rows[0];
+};
+
 export const storeUserDB = async (username, password, pool) => {
   const client = await pool.connect();
   const res = await client.query(
     'INSERT INTO users (username, password) VALUES ($1, $2) RETURNING *',
-    [username, password],
+    [username, password]
   );
-  console.log(res);
+  console.log(res.rows[0]);
   client.release();
-  return res;
+  return res.rows[0];
 };
 
 export const getUserInfoDB = async (username, pool) => {
   const client = await pool.connect();
   const res = await client.query(
     'SELECT id, username, password FROM users WHERE username = $1',
-    [username],
+    [username]
   );
   console.log(res.rows[0]);
   client.release();
@@ -24,7 +50,7 @@ export const storeNoteDB = async (content, userID, pool) => {
   const client = await pool.connect();
   const res = await client.query(
     'INSERT INTO notes (content, user_id) VALUES ($1, $2) RETURNING *',
-    [content, userID],
+    [content, userID]
   );
   console.log(res.rows[0]);
   client.release();
