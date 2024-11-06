@@ -11,6 +11,11 @@ const initDB = async () => {
   });
   try {
     await pool.query(`
+      CREATE TABLE IF NOT EXISTS tokens (
+      user_id INTEGER PRIMARY KEY REFERENCES users(id),
+      hash TEXT NOT NULL)
+      `);
+    await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
         username TEXT NOT NULL,

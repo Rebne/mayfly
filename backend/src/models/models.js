@@ -7,7 +7,7 @@ export const deleteRefreshTokenDB = async (hash, pool) => {
 export const storeRefreshTokenDB = async (userID, hash, pool) => {
   const client = await pool.connect();
   const res = await client.query(
-    'INSERT INTO tokens (userID, hash) VALUES($1, $2)',
+    'INSERT INTO tokens (user_id, hash) VALUES($1, $2)',
     [userID, hash]
   );
   console.log(res.rows[0]);
