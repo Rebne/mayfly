@@ -8,11 +8,23 @@ const router = express.Router();
 const secret_key = process.env.SECRET_KEY;
 
 router.post('/login', loginHandler);
-router.post('/refresh-token', refreshHandler);
 router.post('/logout', logoutHandler);
 router.post('/register', registerHandler);
+router.post('/refresh', refreshHandler);
 
-router.post()
+router.post();
+
+const logoutHandler = async (req, res) => {
+  const { refreshToken } = req.body;
+  const hash = crypto.createHash('sha256').update(refreshToken).digest('hex');
+  try {
+    await deleteRefreshTokenByHashDB(hash, req.app.locals.pool);
+  } catch (error) {
+    console.error('Error deleting refresh token', error);
+    return res.status(401).json({ error: 'Invalid refresh token' });
+  }
+  return res.status(200).json({ message: 'Successfully logged out' });
+};
 
 const registerHandler = async (req, res) => {
   try {
@@ -22,16 +34,25 @@ const registerHandler = async (req, res) => {
     if (user) {
       return res.status(409).json({ error: 'Username already exists' });
     }
-    const newUser = await insertUserDB(username, hashedPassword, req.app.locals.pool);
-    const token = generateToken(newUser);
-    res.status(201).json({ token });
+    const newUser = await insertUserDB(
+      username,
+      hashedPassword,
+      req.app.locals.pool,
+    );
+    const accessToken = jwt.sign({ id: newUser.id }, secret_key, {
+      expiresIn: '15m',
+    });
+    const refreshToken = jwt.sign({ id: newUser.id }, secret_key, {
+      expiresIn: '30d',
+    });
+    res
+      .status(201)
+      .json({ accessToken: accessToken, refreshToken: refreshToken });
   } catch (error) {
     console.error('Error registering user', error);
     res.status(500).json({ error: 'Internal server error' });
   }
-}
-
-
+};
 
 const loginHandler = async (req, res) => {
   const { username, password } = req.body;
@@ -45,8 +66,8 @@ const loginHandler = async (req, res) => {
     expiresIn: '30d',
   });
   res.status(200).json({
-    accessToken,
-    refreshToken,
+    accessToken: accessToken,
+    refreshToken: refreshToken,
   });
 };
 
