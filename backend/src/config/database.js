@@ -15,7 +15,7 @@ const initDB = async () => {
       CREATE TABLE IF NOT EXISTS users (
         id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
         username TEXT,
-        password TEXT
+        password TEXT,
       );
 
     `);

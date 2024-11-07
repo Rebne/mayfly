@@ -13,7 +13,9 @@ const initDB = async () => {
     await pool.query(`
       CREATE TABLE IF NOT EXISTS tokens (
       user_id INTEGER PRIMARY KEY REFERENCES users(id),
-      hash TEXT NOT NULL)
+      hash TEXT NOT NULL),
+      expires_at TIMESTAMP NOT NULL);
+
       `);
     await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
