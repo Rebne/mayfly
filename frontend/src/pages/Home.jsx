@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-function App() {
+function Home() {
     const [notes, setNotes] = useState([]);
     const [content, setContent] = useState('');
     const noteInputRef = useRef(null);
@@ -88,4 +88,4 @@ function App() {
     );
 }
 
-export default App;
+export default Home;
