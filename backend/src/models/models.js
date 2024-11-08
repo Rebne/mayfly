@@ -75,5 +75,5 @@ export const getNotesAndRemoveOldDB = async (username, pool) => {
     .map((row) => row.id);
   await client.query('DELETE FROM notes WHERE id = ANY($1)', [rowsToDeleteIDs]);
   client.release();
-  return res.rows;
+  return res.rows.filter((row) => row.created_at > twelveHoursAgo);
 };
