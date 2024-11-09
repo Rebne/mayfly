@@ -94,14 +94,7 @@ export const loginHandler = async (req, res) => {
     .digest('hex');
 
   try {
-    const updated = await updateRefreshTokenDB(
-      user.id,
-      refreshTokenHash,
-      req.app.locals.pool
-    );
-    if (!updated) {
-      await storeRefreshTokenDB(user.id, refreshTokenHash, req.app.locals.pool);
-    }
+    await storeRefreshTokenDB(user.id, refreshTokenHash, req.app.locals.pool);
     res.cookie('token', accessToken, {
       httpOnly: true,
       secure: true,
