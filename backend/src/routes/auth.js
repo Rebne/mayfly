@@ -4,7 +4,7 @@ import {
   logoutHandler,
   registerHandler,
   refreshHandler,
-} from './handlers.js';
+} from './auth_handlers.js';
 
 const router = express.Router();
 

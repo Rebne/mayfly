@@ -6,9 +6,8 @@ import {
   updateRefreshTokenDB,
   deleteRefreshTokenDB,
   storeRefreshTokenDB,
-  storeUserDB,
-  getUserInfoDB,
-} from '../models/models.js';
+} from '../models/tokens.js';
+import { storeUserDB, getUserInfoDB } from '../models/users.js';
 
 dotenv.config();
 const secret_key = process.env.SECRET_KEY;
@@ -31,11 +30,11 @@ export const logoutHandler = async (req, res) => {
 export const registerHandler = async (req, res) => {
   try {
     const { username, password } = req.body;
-    const hashedPassword = await bcrypt.hash(password, 10);
     const user = await getUserInfoDB(username, req.app.locals.pool);
     if (user) {
       return res.status(409).json({ error: 'Username already exists' });
     }
+    const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = await storeUserDB(
       username,
       hashedPassword,

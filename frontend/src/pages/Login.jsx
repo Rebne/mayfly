@@ -1,4 +1,4 @@
-import react ,{ useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 function Login() {
@@ -7,7 +7,7 @@ function Login() {
   const [errorMessage, setErrorMessage] = useState('');
   const navigate = useNavigate();
 
-  const handleUserSubmit = async (event) => {
+  const handleLoginSubmit = async (event) => {
     event.preventDefault();
     try {
       const response = await fetch('/api/login', {
@@ -57,7 +57,7 @@ function Login() {
               />
             </svg>
           </div>
-          <form id="noteForm" onSubmit={handleUserSubmit} className="mb-6">
+          <form id="noteForm" onSubmit={handleLoginSubmit} className="mb-6">
             <div className="flex flex-col items-center py-2">
               <input
                 type="text"
