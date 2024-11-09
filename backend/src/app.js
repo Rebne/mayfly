@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url';
 import apiRoutes from './routes/api.js';
 import authRoutes from './routes/auth.js';
 import { middlewareLogger } from './middleware/logger.js';
+import { authenticateTokenMiddleware } from './middleware/auth.js';
 import initDB from './config/test_database.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -20,7 +21,7 @@ app.use(middlewareLogger);
 app.use(express.json());
 app.use(express.static(__distpath));
 
-app.use('/api', apiRoutes);
+app.use('/api', authenticateTokenMiddleware, apiRoutes);
 app.use('/auth', authRoutes);
 app.get('*', (_, res) => {
   res.sendFile(path.join(__distpath, 'index.html'));
