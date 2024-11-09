@@ -34,6 +34,14 @@ export const registerHandler = async (req, res) => {
     if (user) {
       return res.status(409).json({ error: 'Username already exists' });
     }
+    if (
+      username.length < 3 ||
+      username.length > 20 ||
+      password.length < 3 ||
+      password.length > 20
+    ) {
+      return res.status(400).json({ error: 'This is not allowed' });
+    }
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = await storeUserDB(
       username,
