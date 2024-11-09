@@ -15,10 +15,11 @@ export const storeRefreshTokenDB = async (userID, hash, pool) => {
 
 export const updateRefreshTokenDB = async (userID, hash, pool) => {
   const client = await pool.connect();
+  console.log('hash:', hash);
+  console.log('userID:', userID);
   const res = await client.query(
     "UPDATE tokens SET hash = $1, expires_at = NOW() + INTERVAL '30 days' WHERE user_id = $2",
     [hash, userID]
   );
   client.release();
-  return res.rows[0];
 };

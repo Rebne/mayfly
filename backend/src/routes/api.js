@@ -3,7 +3,7 @@ import {
   getNotesAndRemoveOldDB,
   storeNoteDB,
   deleteNoteDB,
-} from '../models/models.js';
+} from '../models/notes.js';
 
 const router = express.Router();
 
