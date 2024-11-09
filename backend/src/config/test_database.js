@@ -11,19 +11,19 @@ const initDB = async () => {
   });
   try {
     await pool.query(`
-      CREATE TABLE IF NOT EXISTS tokens (
-      user_id INTEGER PRIMARY KEY REFERENCES users(id),
-      hash TEXT NOT NULL,
-      expires_at TIMESTAMP NOT NULL);
-
-      `);
-    await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
         username TEXT NOT NULL,
         password TEXT
       );
     `);
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS tokens (
+      user_id INTEGER PRIMARY KEY REFERENCES users(id),
+      hash TEXT NOT NULL,
+      expires_at TIMESTAMP NOT NULL);
+
+      `);
     await pool.query(`
       CREATE TABLE IF NOT EXISTS notes (
         id SERIAL PRIMARY KEY,

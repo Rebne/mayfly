@@ -10,7 +10,6 @@ export const storeRefreshTokenDB = async (userID, hash, pool) => {
     "INSERT INTO tokens (user_id, hash, expires_at) VALUES($1, $2, NOW() + INTERVAL '30 days')",
     [userID, hash]
   );
-  console.log(res.rows[0]);
   client.release();
 };
 
@@ -30,7 +29,6 @@ export const storeUserDB = async (username, password, pool) => {
     'INSERT INTO users (username, password) VALUES ($1, $2) RETURNING *',
     [username, password]
   );
-  console.log(res.rows[0]);
   client.release();
   return res.rows[0];
 };
@@ -41,7 +39,6 @@ export const getUserInfoDB = async (username, pool) => {
     'SELECT id, username, password FROM users WHERE username = $1',
     [username]
   );
-  console.log(res.rows[0]);
   client.release();
   return res.rows[0];
 };
@@ -52,7 +49,6 @@ export const storeNoteDB = async (content, userID, pool) => {
     'INSERT INTO notes (content, user_id) VALUES ($1, $2) RETURNING *',
     [content, userID]
   );
-  console.log(res.rows[0]);
   client.release();
 };
 

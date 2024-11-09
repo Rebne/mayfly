@@ -1,34 +1,33 @@
 import react ,{ useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const navigate = useNavigate();
 
-  const handleUserSubmit = (event) => {
+  const handleUserSubmit = async (event) => {
     event.preventDefault();
-    const response = fetch('/api/login', {
+    try {
+      const response = await fetch('/api/login', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({username: username, password: password}),
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Login failed');
-        }
-        return response.json();
-    })
-    .then(data => {
-        localStorage.setItem('accessToken', data.accessToken);
-        localStorage.setItem('refreshToken', data.refreshToken);
-        window.location.href = '/';
-    })
-    .catch(error => {
-        setErrorMessage('Invalid username or password');
-        console.error('Login error:', error);
-    });
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error);
+      }
+      
+      localStorage.setItem('refreshToken', data.refreshToken);
+      navigate('/');
+    } catch (error) {
+      setErrorMessage(error.message);
+      console.error('Login error:', error);
+    }
   }
 
   const handleUsername = (event) => {
@@ -58,30 +57,41 @@ function Login() {
               />
             </svg>
           </div>
-          <form id="noteForm" onSubmit={handleFormSubmit} className="mb-6">
-            <div className="flex items-center border-b border-gray-300 py-2">
+          <form id="noteForm" onSubmit={handleUserSubmit} className="mb-6">
+            <div className="flex flex-col items-center py-2">
               <input
                 type="text"
-                name="content"
-                ref={noteInputRef}
-                value={content}
-                onChange={handleInputChange}
+                name="username"
+                value={username}
+                onChange={handleUsername}
+                className="border-2 border-gray-500 rounded-xl w-1/2 p-2 my-0.5 focus:outline-none focus:border-black focus:border-2"
                 required
-                className="appearance-none bg-transparent border-none w-full text-gray-700 mr-3 py-1 px-2 leading-tight focus:outline-none"
-                placeholder="Type your note and press Enter"
-                autoComplete="off"
+                placeholder="Enter username"
               />
+              <input
+                type="password"
+                name="password" 
+                value={password}
+                onChange={handlePassword}
+                className="border-2 border-gray-500 rounded-xl p-2 w-1/2 my-0.5 focus:outline-none focus:border-black focus:border-2"
+                required
+                placeholder="Enter password"
+              />
+              <button
+                type="submit"
+                className="mt-2 flex-shrink-0 bg-black hover:bg-gray-800 border-black hover:border-gray-800 text-sm border-4 text-white py-1 px-2 rounded"
+              >
+                Login
+              </button>
+              <div className="h-6">
+                <p className="error-message text-red-500 mt-2">{errorMessage}</p>
+              </div>
             </div>
           </form>
-          <ul className="space-y-2">
-            {notes.map((note, index) => (
-              <li key={index} className="bg-gray-50 rounded p-3 shadow">
-                {note.content}
-              </li>
-            ))}
-          </ul>
         </div>
       </div>
     </div>
   );
 }
+
+export default Login;
