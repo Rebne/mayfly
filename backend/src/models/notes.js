@@ -19,7 +19,7 @@ export const getNotesAndRemoveOldDB = async (username, pool) => {
     'SELECT * FROM notes WHERE user_id = $1 ORDER BY id DESC',
     [username]
   );
-  const twelveHoursAgo = new Date(Date.now() - 1000); // FOR TESTING
+  const twelveHoursAgo = new Date(Date.now() - 3 * 60 * 1000); // FOR TESTING
   // const twelveHoursAgo = new Date(Date.now() - 1000 * 60 * 60 * 12);
   const rowsToDeleteIDs = res.rows
     .filter((row) => row.created_at <= twelveHoursAgo)

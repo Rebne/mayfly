@@ -8,7 +8,7 @@ import Register from './pages/Register.jsx';
 import './index.css';
 
 const ProtectedRoute = ({ children}) => {
-  const isAuthenticated = localStorage.getItem('token');
+  const isAuthenticated = localStorage.getItem('refreshToken');
   if (!isAuthenticated) {
     //if no replace user would loop back to login when trying to access previous page
     return <Navigate to='/login' replace />
