@@ -7,9 +7,9 @@ import {
 
 const router = express.Router();
 
-router.get('/notes/:userId', async (req, res) => {
+router.get('/notes', async (req, res) => {
   try {
-    const userID = req.params.userId;
+    const userID = req.id;
     const notes = await getNotesAndRemoveOldDB(userID, req.app.locals.pool);
     res.status(200).json({ notes: notes.map((note) => note.content) });
     console.log('Successfully retrieved all notes for user: ' + userID);
@@ -19,11 +19,11 @@ router.get('/notes/:userId', async (req, res) => {
   }
 });
 
-router.post('/notes/:userId', async (req, res) => {
+router.post('/notes', async (req, res) => {
   try {
     const { content } = req.body;
-    const userID = req.params.userId;
-    const newNote = await storeNoteDB(content, userID, req.app.locals.pool);
+    const userID = req.id;
+    await storeNoteDB(content, userID, req.app.locals.pool);
     res.status(201).end();
     console.log('New note was successfully addedd for user: ' + userID);
   } catch (error) {
