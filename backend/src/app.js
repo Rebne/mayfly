@@ -1,5 +1,6 @@
 import express from 'express';
 import dotenv from 'dotenv';
+import cookieParser from 'cookie-parser';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import apiRoutes from './routes/api.js';
@@ -17,6 +18,7 @@ dotenv.config();
 const port = process.env.PORT || 8080;
 const app = express();
 
+app.use(cookieParser());
 app.use(middlewareLogger);
 app.use(express.json());
 app.use(express.static(__distpath));

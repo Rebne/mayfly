@@ -8,24 +8,19 @@ function Home() {
     useEffect(() => {
         // Automatically focus the input when the component mounts
         noteInputRef.current.focus();
-        // Fetch existing notes when component mounts
-        fetch('/api/notes', {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-            }
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(response.error || 'Failed to get messages');
-            }
-            return response.json();
-        })
-        .then(data => {
-            setNotes(data.notes);
-        })
-        .catch(error => {
-            console.error('Error fetching notes:', error);
-        });
+        fetch('/api/notes')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(response.error || 'Failed to get messages');
+                }
+                return response.json();
+            })
+            .then(data => {
+                setNotes(data.notes);
+            })
+            .catch(error => {
+                console.error('Error fetching notes:', error);
+            });
     }, []);
 
     const handleInputChange = (e) => {
@@ -37,18 +32,22 @@ function Home() {
         if (content.trim()) {
             setNotes([...notes, { content }]);
             setContent('');
-            try {
-                fetch('/api/notes', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-                    },
-                    body: JSON.stringify({content: content})
-                });
-            } catch (error) {
+            fetch('/api/notes', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({content: content})
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to save note');
+                }
+            })
+            .catch(error => {
                 console.error('Failed to post message: ', error);
-            }
+                setNotes(notes.slice(0, -1));
+            });
         }
     };
 

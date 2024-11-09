@@ -16,7 +16,7 @@ export const deleteNoteDB = async (noteID, pool) => {
 export const getNotesAndRemoveOldDB = async (username, pool) => {
   const client = await pool.connect();
   const res = await client.query(
-    'SELECT * FROM notes WHERE user_id = $1 ORDER BY id DESC',
+    'SELECT * FROM notes WHERE user_id = $1 ORDER BY id ASC',
     [username]
   );
   const twelveHoursAgo = new Date(Date.now() - 3 * 60 * 1000); // FOR TESTING
