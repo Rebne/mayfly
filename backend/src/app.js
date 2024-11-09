@@ -21,7 +21,7 @@ app.use(express.json());
 app.use(express.static(__distpath));
 
 app.use('/api', apiRoutes);
-app.use('/api', authRoutes);
+app.use('/auth', authRoutes);
 app.get('*', (_, res) => {
   res.sendFile(path.join(__distpath, 'index.html'));
 });
