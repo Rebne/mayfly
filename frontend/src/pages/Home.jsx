@@ -8,19 +8,21 @@ function Home() {
     useEffect(() => {
         // Automatically focus the input when the component mounts
         noteInputRef.current.focus();
-        fetch('/api/notes')
-            .then(response => {
+        
+        const fetchNotes = async () => {
+            try {
+                const response = await fetch('/api/notes');
+                const data = await response.json();
                 if (!response.ok) {
-                    throw new Error(response.error || 'Failed to get messages');
+                    throw new Error(data.error || 'Failed to get messages');
                 }
-                return response.json();
-            })
-            .then(data => {
                 setNotes(data.notes);
-            })
-            .catch(error => {
+            } catch (error) {
                 console.error('Error fetching notes:', error);
-            });
+            }
+        };
+
+        fetchNotes();
     }, []);
 
     const handleInputChange = (e) => {
