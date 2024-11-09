@@ -4,41 +4,68 @@ import { useNavigate } from 'react-router-dom';
 function Register() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState([]);
   const navigate = useNavigate();
+
+  const isInvalidUsername = () => {
+    if (!username || username.length < 3 || username.length > 20) {
+      setErrorMessage([
+        ...errorMessage,
+        'Username must be between 3 and 20 characters',
+      ]);
+      return true;
+    }
+    return false;
+  };
+
+  const isInvalidPassword = () => {
+    if (!password || password.length < 3 || password.length > 20) {
+      setErrorMessage(
+        ...errorMessage,
+        'Username must be between 3 and 20 characters'
+      );
+      return true;
+    }
+    return false;
+  };
 
   const handleRegisterSubmit = async (event) => {
     event.preventDefault();
+    const hasUsernameError = isInvalidUsername();
+    const hasPasswordError = isInvalidPassword();
+    if (hasUsernameError || hasPasswordError) {
+      return;
+    }
     try {
       const response = await fetch('/api/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({username: username, password: password}),
+        body: JSON.stringify({ username: username, password: password }),
       });
       const data = await response.json();
       if (!response.ok) {
         throw new Error(data.error);
       }
-      
+
       localStorage.setItem('refreshToken', data.refreshToken);
       navigate('/');
     } catch (error) {
       setErrorMessage(error.message);
       console.error('Login error:', error);
     }
-  }
+  };
 
   const handleUsername = (event) => {
     setUsername(event.target.value);
-    setErrorMessage('');
+    setErrorMessage([]);
   };
-  
+
   const handlePassword = (event) => {
     setPassword(event.target.value);
-    setErrorMessage('');
-  }
+    setErrorMessage([]);
+  };
 
   return (
     <div className="bg-gray-100 min-h-screen py-12 px-4 sm:px-6 lg:px-8">
@@ -70,7 +97,7 @@ function Register() {
               />
               <input
                 type="password"
-                name="password" 
+                name="password"
                 value={password}
                 onChange={handlePassword}
                 className="border-2 border-gray-500 rounded-xl p-2 w-1/2 my-0.5 focus:outline-none focus:border-black focus:border-2"
@@ -81,10 +108,12 @@ function Register() {
                 type="submit"
                 className="mt-2 flex-shrink-0 bg-black hover:bg-gray-800 border-black hover:border-gray-800 text-sm border-4 text-white py-1 px-2 rounded"
               >
-               Register 
+                Register
               </button>
               <div className="h-6">
-                <p className="error-message text-red-500 mt-2">{errorMessage}</p>
+                <p className="error-message text-red-500 mt-2">
+                  {errorMessage}
+                </p>
               </div>
             </div>
           </form>
