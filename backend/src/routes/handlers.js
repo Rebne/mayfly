@@ -56,9 +56,13 @@ export const registerHandler = async (req, res) => {
       refreshTokenHash,
       req.app.locals.pool
     );
-    return res
-      .status(201)
-      .json({ accessToken: accessToken, refreshToken: refreshToken });
+    res.cookie('token', accessToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+      maxAge: 15 * 60 * 1000,
+    });
+    return res.status(201).json({ refreshToken: refreshToken });
   } catch (error) {
     console.error('Error registering user', error);
     return res.status(500).json({ error: 'Internal server error' });
@@ -91,9 +95,13 @@ export const loginHandler = async (req, res) => {
     if (!updated) {
       await storeRefreshTokenDB(user.id, refreshTokenHash, req.app.locals.pool);
     }
-
+    res.cookie('token', accessToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+      maxAge: 15 * 60 * 1000,
+    });
     return res.status(200).json({
-      accessToken: accessToken,
       refreshToken: refreshToken,
     });
   } catch (error) {
@@ -130,8 +138,13 @@ export const refreshHandler = async (req, res) => {
     if (!updated) {
       return res.status(401).json({ error: 'Invalid refresh token' });
     }
+    res.cookie('token', newAccessToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+      maxAge: 15 * 60 * 1000,
+    });
     return res.status(200).json({
-      accessToken: newAccessToken,
       refreshToken: newRefreshToken,
     });
   } catch (error) {
