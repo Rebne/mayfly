@@ -11,7 +11,7 @@ router.get('/notes', async (req, res) => {
   try {
     const userID = req.id;
     const notes = await getNotesAndRemoveOldDB(userID, req.app.locals.pool);
-    res.status(200).json({ notes: notes.map((note) => note.content) });
+    res.status(200).json({ notes: notes });
     console.log('Successfully retrieved all notes for user: ' + userID);
   } catch (error) {
     console.error('Error getting notes or deleting old notes', error);
