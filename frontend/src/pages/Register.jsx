@@ -4,15 +4,12 @@ import { useNavigate } from 'react-router-dom';
 function Register() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [errorMessage, setErrorMessage] = useState([]);
+  const [errorMessages, setErrorMessages] = useState([]);
   const navigate = useNavigate();
 
   const isInvalidUsername = () => {
     if (!username || username.length < 3 || username.length > 20) {
-      setErrorMessage([
-        ...errorMessage,
-        'Username must be between 3 and 20 characters',
-      ]);
+      setErrorMessages(prev => [...prev, 'Username must be between 3 and 20 characters']);
       return true;
     }
     return false;
@@ -20,10 +17,7 @@ function Register() {
 
   const isInvalidPassword = () => {
     if (!password || password.length < 3 || password.length > 20) {
-      setErrorMessage(
-        ...errorMessage,
-        'Username must be between 3 and 20 characters'
-      );
+      setErrorMessages(prev => [...prev, 'Password must be between 3 and 20 characters']);
       return true;
     }
     return false;
@@ -52,19 +46,19 @@ function Register() {
       localStorage.setItem('refreshToken', data.refreshToken);
       navigate('/');
     } catch (error) {
-      setErrorMessage(error.message);
+      setErrorMessages([error.message]);
       console.error('Login error:', error);
     }
   };
 
   const handleUsername = (event) => {
     setUsername(event.target.value);
-    setErrorMessage([]);
+    setErrorMessages([]);
   };
 
   const handlePassword = (event) => {
     setPassword(event.target.value);
-    setErrorMessage([]);
+    setErrorMessages([]);
   };
 
   return (
@@ -111,9 +105,11 @@ function Register() {
                 Register
               </button>
               <div className="h-6">
-                <p className="error-message text-red-500 mt-2">
-                  {errorMessage}
-                </p>
+                {errorMessages.map((msg) => (
+                  <p key={msg} className="error-message text-red-500 mt-2">
+                    {msg}
+                  </p>
+                ))}
               </div>
             </div>
           </form>
