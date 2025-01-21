@@ -15,7 +15,7 @@ const __distpath = path.join(__dirname, '../../frontend/dist');
 
 dotenv.config();
 
-const port = process.env.PORT || 8080;
+const port = process.env.PORT || 3000;
 const app = express();
 
 app.use(cookieParser());

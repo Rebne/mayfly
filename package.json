@@ -17,5 +17,8 @@
   },
   "author": "Rebne",
   "license": "ISC",
-  "type": "module"
+  "type": "module",
+  "devDependencies": {
+    "@flydotio/dockerfile": "^0.7.2"
+  }
 }
