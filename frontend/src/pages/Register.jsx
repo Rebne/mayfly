@@ -43,7 +43,7 @@ function Register() {
         throw new Error(data.error);
       }
 
-      localStorage.setItem('refreshToken', data.refreshToken);
+      localStorage.setItem('token', data.token);
       navigate('/');
     } catch (error) {
       setErrorMessages([error.message]);

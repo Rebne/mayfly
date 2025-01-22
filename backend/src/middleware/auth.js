@@ -9,7 +9,8 @@ if (!secret_key) {
 }
 
 export const authenticateTokenMiddleware = (req, res, next) => {
-  const token = req.cookies.token;
+  const authHeader = req.headers.authorization;
+  const token = authHeader && authHeader.split(' ')[1];
   if (!token) {
     return res.status(401).json({ error: 'Access token required' });
   }
@@ -18,7 +19,6 @@ export const authenticateTokenMiddleware = (req, res, next) => {
     req.id = decoded.id;
     next();
   } catch (error) {
-    console.error('Error verifying token:', error);
     return res.status(401).json({ error: 'Invalid token' });
   }
 };

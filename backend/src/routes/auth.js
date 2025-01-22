@@ -1,16 +1,9 @@
 import express from 'express';
-import {
-  loginHandler,
-  logoutHandler,
-  registerHandler,
-  refreshHandler,
-} from './auth_handlers.js';
+import { loginHandler, registerHandler } from './auth_handlers.js';
 
 const router = express.Router();
 
 router.post('/login', loginHandler);
-router.post('/logout', logoutHandler);
 router.post('/register', registerHandler);
-router.post('/refresh', refreshHandler);
 
 export default router;
