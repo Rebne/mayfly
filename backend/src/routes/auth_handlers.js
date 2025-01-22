@@ -78,77 +78,77 @@ export const registerHandler = async (req, res) => {
 
 export const loginHandler = async (req, res) => {
   const { username, password } = req.body;
+
   const user = await getUserInfoDB(username, req.app.locals.pool);
-  if (!user || !bcrypt.compareSync(password, user.password))
-    return res.status(401).json({ error: 'Invalid username or password' });
+  if (!user || !bcrypt.compareSync(password, user.password)) {
+    return res.status(401).json({ error: 'Invalid credentials' });
+  }
 
   const accessToken = jwt.sign({ id: user.id }, secret_key, {
     expiresIn: '15m',
   });
   const refreshToken = jwt.sign({ id: user.id }, secret_key, {
-    expiresIn: '30d',
+    expiresIn: '7d',
   });
+
   const refreshTokenHash = crypto
     .createHash('sha256')
     .update(refreshToken)
     .digest('hex');
 
-  try {
-    await storeRefreshTokenDB(user.id, refreshTokenHash, req.app.locals.pool);
-    res.cookie('token', accessToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'strict',
-      maxAge: 15 * 60 * 1000,
-    });
-    return res.status(200).json({
-      refreshToken: refreshToken,
-    });
-  } catch (error) {
-    console.error('Error handling refresh token:', error);
-    return res.status(500).json({ error: 'Internal server error' });
-  }
+  await storeRefreshTokenDB(user.id, refreshTokenHash, req.app.locals.pool);
+
+  res.cookie('token', accessToken, {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'strict',
+    maxAge: 15 * 60 * 1000,
+  });
+
+  return res.status(200).json({ refreshToken });
 };
 
 export const refreshHandler = async (req, res) => {
   const { refreshToken } = req.body;
-  if (!refreshToken) return res.status(400).json({ error: 'No refresh token' });
+  if (!refreshToken) {
+    return res.status(400).json({ error: 'Refresh token required' });
+  }
+
   try {
     const decoded = jwt.verify(refreshToken, secret_key);
-    const oldHash = crypto
-      .createHash('sha256')
-      .update(refreshToken)
-      .digest('hex');
+
     const newAccessToken = jwt.sign({ id: decoded.id }, secret_key, {
       expiresIn: '15m',
     });
     const newRefreshToken = jwt.sign({ id: decoded.id }, secret_key, {
-      expiresIn: '30d',
+      expiresIn: '7d',
     });
+
+    const oldHash = crypto
+      .createHash('sha256')
+      .update(refreshToken)
+      .digest('hex');
     const newHash = crypto
       .createHash('sha256')
       .update(newRefreshToken)
       .digest('hex');
-    const updated = await updateRefreshTokenDB(
+
+    await updateRefreshTokenDB(
       decoded.id,
       oldHash,
       newHash,
       req.app.locals.pool
     );
-    if (!updated) {
-      return res.status(401).json({ error: 'Invalid refresh token' });
-    }
+
     res.cookie('token', newAccessToken, {
       httpOnly: true,
       secure: true,
       sameSite: 'strict',
       maxAge: 15 * 60 * 1000,
     });
-    return res.status(200).json({
-      refreshToken: newRefreshToken,
-    });
+
+    return res.status(200).json({ refreshToken: newRefreshToken });
   } catch (error) {
-    console.error('Error refreshing token:', error);
     return res.status(401).json({ error: 'Invalid refresh token' });
   }
 };

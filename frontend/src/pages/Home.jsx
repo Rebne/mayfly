@@ -11,7 +11,7 @@ function Home() {
         
         const fetchNotes = async () => {
             try {
-                const response = await fetch('/api/notes');
+                const response = await fetchWithAuth('/api/notes');
                 const data = await response.json();
                 if (!response.ok) {
                     throw new Error(data.error || 'Failed to get messages');
@@ -66,6 +66,45 @@ function Home() {
             document.removeEventListener('click', handlePageClick);
         };
     }, []);
+
+    const refreshTokens = async () => {
+        try {
+            const refreshToken = localStorage.getItem('refreshToken');
+            const response = await fetch('/auth/refresh', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ refreshToken }),
+            });
+            
+            if (!response.ok) throw new Error('Refresh failed');
+            
+            const data = await response.json();
+            localStorage.setItem('refreshToken', data.refreshToken);
+            return true;
+        } catch (error) {
+            localStorage.removeItem('refreshToken');
+            window.location.href = '/login';
+            return false;
+        }
+    };
+
+    const fetchWithAuth = async (url, options = {}) => {
+        try {
+            const response = await fetch(url, options);
+            if (response.status === 401) {
+                const refreshed = await refreshTokens();
+                if (refreshed) {
+                    return fetch(url, options);
+                }
+            }
+            return response;
+        } catch (error) {
+            console.error('Request failed:', error);
+            throw error;
+        }
+    };
 
     return (
         <div className="bg-gray-100 min-h-screen py-12 px-4 sm:px-6 lg:px-8">
